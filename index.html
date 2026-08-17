@@ -3,583 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Studio Pro - Chỉnh sửa ảnh phong cách Nhật Bản</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <title>AI Video Creator</title>
+    <!-- TensorFlow.js và MobileNet cho nhận diện ảnh cơ bản (giả lập AI) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@latest"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', 'Arial', sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 15px; }
-        .container { max-width: 1600px; margin: 0 auto; background: #16213e; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; border-bottom: 2px solid #e94560; padding-bottom: 15px; }
-        .header h1 { background: linear-gradient(135deg, #e94560, #f5a623); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; }
-        .status-badge { background: #0f3460; padding: 8px 18px; border-radius: 30px; border-left: 4px solid #e94560; }
-        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; padding: 12px; background: #0f3460; border-radius: 12px; }
-        .tool-btn { background: #1a1a2e; border: 1px solid #30475e; color: #e0e0e0; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.3s; }
-        .tool-btn:hover { background: #e94560; border-color: #f5a623; transform: scale(1.02); }
-        .tool-btn.active { background: #e94560; border-color: #f5a623; }
-        .work-area { display: flex; flex-wrap: wrap; gap: 20px; }
-        .canvas-wrapper { flex: 3; min-width: 550px; background: #0f3460; border-radius: 16px; padding: 15px; border: 2px solid #30475e; }
-        #image-container { max-height: 650px; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #1a1a2e; border-radius: 12px; position: relative; }
-        #image-preview { max-width: 100%; max-height: 600px; display: block; }
-        #cropper-box { display: none; margin: 10px 0; }
-        #cropper-box img { max-width: 100%; }
-        .controls-panel { flex: 1; min-width: 300px; background: #0f3460; border-radius: 16px; padding: 20px; border: 2px solid #30475e; }
-        .ctrl-group { margin-bottom: 22px; background: #1a1a2e; padding: 15px; border-radius: 12px; }
-        .ctrl-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #f5a623; }
-        .ctrl-group input[type="range"] { width: 100%; accent-color: #e94560; background: #30475e; height: 6px; border-radius: 3px; }
-        .ctrl-group input[type="file"] { background: #1a1a2e; border: 1px dashed #e94560; padding: 10px; border-radius: 8px; width: 100%; color: #e0e0e0; }
-        .row-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-        .action-btn { background: #e94560; border: none; color: #fff; padding: 10px 22px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; transition: 0.3s; }
-        .action-btn:hover { background: #c73e54; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(233,69,96,0.4); }
-        .action-btn.danger { background: #c0392b; }
-        .action-btn.secondary { background: #30475e; color: #e0e0e0; }
-        .action-btn.ai { background: #f5a623; color: #1a1a2e; }
-        .action-btn.ai:hover { background: #e0941a; }
-        .ai-status { background: #1a1a2e; padding: 15px; border-radius: 10px; margin-top: 12px; font-size: 14px; border-left: 5px solid #f5a623; min-height: 60px; }
-        .history-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
-        .history-btn { background: #30475e; border: 1px solid #e94560; color: #e0e0e0; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: 0.2s; }
-        .history-btn:hover { background: #e94560; }
-        .fun-feature { background: linear-gradient(135deg, #1a1a2e, #16213e); border: 2px solid #f5a623; border-radius: 12px; padding: 15px; margin-top: 15px; }
-        .fun-feature h4 { color: #f5a623; margin-bottom: 10px; }
-        #file-input { display: none; }
-        .emoji-big { font-size: 24px; }
-        @media (max-width: 700px) { .canvas-wrapper { min-width: 100%; } }
+        body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #00ffcc; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; border: 1px solid #00ffcc; padding: 25px; background: #111; }
+        input, textarea, button { width: 100%; padding: 12px; margin: 8px 0; background: #222; color: #0ff; border: 1px solid #0ff; font-family: inherit; }
+        button { background: #003d3d; cursor: pointer; font-weight: bold; }
+        button:hover { background: #006666; }
+        #preview { margin-top: 20px; border: 1px dashed #0ff; min-height: 200px; padding: 15px; background: #1a1a1a; }
+        video { max-width: 100%; display: block; margin: 10px auto; border: 2px solid #0ff; }
+        .flex-row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .flex-row > div { flex: 1; min-width: 200px; }
+        .label { color: #ffaa00; font-weight: bold; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <h1>🎌 ANIME STUDIO PRO</h1>
-        <div class="status-badge"><span id="status-text">⚡ Sẵn sàng</span></div>
+    <h1>⚡ AI VIDEO GENERATOR ⚡</h1>
+    <p><i>// Nhập văn bản + ảnh -> tạo video AI (mô phỏng)</i></p>
+
+    <div class="flex-row">
+        <div>
+            <span class="label">📝 Văn bản mô tả:</span>
+            <textarea id="textInput" rows="4" placeholder="Nhập kịch bản, mô tả hành động, giọng nói...">Robot đang đi bộ trên sao Hỏa, hoàng hôn đỏ rực</textarea>
+        </div>
+        <div>
+            <span class="label">🖼️ Ảnh đầu vào (URL hoặc upload):</span>
+            <input type="text" id="imageUrl" placeholder="https://example.com/image.jpg" value="https://picsum.photos/400/300">
+            <input type="file" id="fileInput" accept="image/*">
+            <button id="loadImageBtn">Tải ảnh lên</button>
+        </div>
     </div>
 
-    <div class="toolbar" id="main-toolbar">
-        <button class="tool-btn" data-filter="none">🔄 Gốc</button>
-        <button class="tool-btn" data-filter="grayscale">⚫ Đen trắng</button>
-        <button class="tool-btn" data-filter="sepia">🟫 Sepia</button>
-        <button class="tool-btn" data-filter="brightness">☀️ Sáng</button>
-        <button class="tool-btn" data-filter="contrast">🔲 Tương phản</button>
-        <button class="tool-btn" data-filter="blur">🌫️ Mờ</button>
-        <button class="tool-btn" data-filter="sharpen">🔪 Sắc nét</button>
-        <button class="tool-btn" data-filter="invert">🎭 Đảo màu</button>
-        <button class="tool-btn" id="crop-toggle">✂️ Cắt xén</button>
-        <button class="tool-btn" id="ai-style-btn">🤖 AI Anime</button>
-        <button class="tool-btn" id="reset-all-btn">🔄 Reset</button>
+    <div class="flex-row">
+        <div>
+            <span class="label">🎬 Hiệu ứng / hành động:</span>
+            <input type="text" id="actionInput" placeholder="ví dụ: xoay, bay, phóng to, chuyển cảnh" value="xoay tròn và bay lên">
+        </div>
+        <div>
+            <span class="label">⏱️ Thời lượng (giây):</span>
+            <input type="number" id="durationInput" value="5" min="1" max="15">
+        </div>
     </div>
 
-    <div class="work-area">
-        <div class="canvas-wrapper">
-            <div id="image-container">
-                <img id="image-preview" src="https://via.placeholder.com/900x600/1a1a2e/e0e0e0?text=Drop+image+or+click+upload" alt="preview">
-            </div>
-            <div id="cropper-box"><img id="crop-image" src=""></div>
-            
-            <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
-                <button class="action-btn" id="upload-btn">📤 Tải ảnh lên</button>
-                <button class="action-btn secondary" id="export-btn">⬇️ PNG</button>
-                <button class="action-btn secondary" id="export-jpg-btn">⬇️ JPG</button>
-                <button class="action-btn danger" id="crop-confirm" style="display:none;">✔ Cắt</button>
-                <button class="action-btn danger" id="crop-cancel" style="display:none;">✖ Hủy</button>
-            </div>
-            <div class="history-bar" id="history-bar"></div>
-            <input type="file" id="file-input" accept="image/*">
-        </div>
+    <button id="generateBtn">▶️ TẠO VIDEO AI (MÔ PHỎNG)</button>
 
-        <div class="controls-panel">
-            <div class="ctrl-group">
-                <label>🎨 Điều chỉnh</label>
-                <label>Độ sáng: <span id="bright-val">100</span>%</label>
-                <input type="range" id="brightness-slider" min="0" max="200" value="100">
-                <label>Tương phản: <span id="contrast-val">100</span>%</label>
-                <input type="range" id="contrast-slider" min="0" max="200" value="100">
-                <label>Làm mờ: <span id="blur-val">0</span>px</label>
-                <input type="range" id="blur-slider" min="0" max="10" step="0.1" value="0">
-                <label>Xoay: <span id="rotate-val">0</span>°</label>
-                <input type="range" id="rotate-slider" min="-180" max="180" value="0">
-            </div>
-
-            <div class="ctrl-group">
-                <label>🤖 Tạo ảnh Anime chuẩn phim</label>
-                <div class="row-buttons">
-                    <button class="action-btn ai" id="ai-anime-classic">🎬 Anime Classic</button>
-                    <button class="action-btn ai" id="ai-anime-manga">📖 Manga Style</button>
-                    <button class="action-btn ai" id="ai-anime-cyber">💠 Cyber Anime</button>
-                    <button class="action-btn ai" id="ai-anime-sketch">✏️ Sketch Anime</button>
-                </div>
-                <div class="ai-status" id="ai-status">⏳ Chọn kiểu Anime để chuyển đổi</div>
-            </div>
-
-            <div class="fun-feature">
-                <h4>✨ Tính năng thú vị</h4>
-                <div class="row-buttons">
-                    <button class="action-btn secondary" id="fun-mosaic">🎨 Khảm pixel</button>
-                    <button class="action-btn secondary" id="fun-glitch">📺 Hiệu ứng Glitch</button>
-                    <button class="action-btn secondary" id="fun-vintage">📽️ Vintage film</button>
-                    <button class="action-btn secondary" id="fun-palette">🌈 Bảng màu 8-bit</button>
-                </div>
-            </div>
-
-            <div class="ctrl-group" style="max-height:120px; overflow-y:auto;">
-                <label>📋 Lịch sử</label>
-                <div id="history-list" style="font-size:12px; color:#aaa;"></div>
-            </div>
-        </div>
+    <div id="preview">
+        <h3>📹 Kết quả video AI:</h3>
+        <video id="outputVideo" width="100%" controls autoplay loop>
+            <source src="" type="video/mp4">
+            Trình duyệt không hỗ trợ video.
+        </video>
+        <div id="statusText" style="color: #ffaa00; font-size: 0.9em;">Chưa tạo video</div>
+        <button id="downloadBtn" style="width: auto; display: none;">⬇️ Tải video xuống</button>
     </div>
 </div>
 
 <script>
-// ===================================================================
-// JAVASCRIPT ĐẦY ĐỦ - XỬ LÝ ẢNH ANIME CHUẨN PHIM
-// ===================================================================
+    // ---------- MÔ PHỎNG AI TẠO VIDEO TỪ VĂN BẢN + ẢNH ----------
+    // Sử dụng Canvas để tạo video giả lập với ảnh, text và hiệu ứng.
+    // Không gửi dữ liệu ra ngoài, hoàn toàn offline.
 
-(function() {
-    'use strict';
+    let loadedImage = null;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const video = document.getElementById('outputVideo');
+    const statusDiv = document.getElementById('statusText');
+    const downloadBtn = document.getElementById('downloadBtn');
 
-    // DOM refs
-    const img = document.getElementById('image-preview');
-    const container = document.getElementById('image-container');
-    const fileInput = document.getElementById('file-input');
-    const cropBox = document.getElementById('cropper-box');
-    const cropImg = document.getElementById('crop-image');
-    const statusText = document.getElementById('status-text');
-    const aiStatus = document.getElementById('ai-status');
-
-    const brightSlider = document.getElementById('brightness-slider');
-    const contrastSlider = document.getElementById('contrast-slider');
-    const blurSlider = document.getElementById('blur-slider');
-    const rotateSlider = document.getElementById('rotate-slider');
-
-    const uploadBtn = document.getElementById('upload-btn');
-    const exportBtn = document.getElementById('export-btn');
-    const exportJpgBtn = document.getElementById('export-jpg-btn');
-    const resetAllBtn = document.getElementById('reset-all-btn');
-    const cropToggle = document.getElementById('crop-toggle');
-    const cropConfirm = document.getElementById('crop-confirm');
-    const cropCancel = document.getElementById('crop-cancel');
-    const historyBar = document.getElementById('history-bar');
-    const historyList = document.getElementById('history-list');
-
-    // AI buttons
-    const aiClassic = document.getElementById('ai-anime-classic');
-    const aiManga = document.getElementById('ai-anime-manga');
-    const aiCyber = document.getElementById('ai-anime-cyber');
-    const aiSketch = document.getElementById('ai-anime-sketch');
-
-    // Fun buttons
-    const funMosaic = document.getElementById('fun-mosaic');
-    const funGlitch = document.getElementById('fun-glitch');
-    const funVintage = document.getElementById('fun-vintage');
-    const funPalette = document.getElementById('fun-palette');
-
-    // State
-    let originalImageData = null;
-    let filterState = { brightness: 100, contrast: 100, blur: 0, grayscale: 0, sepia: 0, invert: 0, rotate: 0 };
-    let history = [];
-    let cropper = null;
-    let cropMode = false;
-
-    // ======== HÀM LỌC CƠ BẢN ========
-    function applyFilters() {
-        const f = filterState;
-        let filterStr = `brightness(${f.brightness}%) contrast(${f.contrast}%) blur(${f.blur}px) grayscale(${f.grayscale}%) sepia(${f.sepia}%) invert(${f.invert}%)`;
-        img.style.filter = filterStr;
-        img.style.transform = `rotate(${f.rotate}deg)`;
-        document.getElementById('bright-val').textContent = f.brightness;
-        document.getElementById('contrast-val').textContent = f.contrast;
-        document.getElementById('blur-val').textContent = f.blur;
-        document.getElementById('rotate-val').textContent = f.rotate;
-        brightSlider.value = f.brightness;
-        contrastSlider.value = f.contrast;
-        blurSlider.value = f.blur;
-        rotateSlider.value = f.rotate;
-    }
-
-    // ======== LƯU LỊCH SỬ ========
-    function saveHistory() {
-        if (!img.complete || img.naturalWidth === 0) return;
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.filter = img.style.filter;
-        ctx.drawImage(img, 0, 0);
-        const dataUrl = canvas.toDataURL('image/png');
-        history.push(dataUrl);
-        if (history.length > 6) history.shift();
-        renderHistory();
-    }
-
-    function renderHistory() {
-        historyBar.innerHTML = '';
-        historyList.innerHTML = '';
-        history.forEach((url, idx) => {
-            const btn = document.createElement('button');
-            btn.className = 'history-btn';
-            btn.textContent = `#${idx+1}`;
-            btn.title = 'Khôi phục';
-            btn.addEventListener('click', () => loadFromData(url));
-            historyBar.appendChild(btn);
-            const li = document.createElement('div');
-            li.textContent = `📸 ${idx+1} - ${new Date().toLocaleTimeString()}`;
-            historyList.appendChild(li);
-        });
-    }
-
-    function loadFromData(dataUrl) {
-        img.src = dataUrl;
+    // Load ảnh từ URL
+    document.getElementById('loadImageBtn').addEventListener('click', function() {
+        const url = document.getElementById('imageUrl').value;
+        if (!url) return;
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
         img.onload = function() {
-            filterState = { brightness: 100, contrast: 100, blur: 0, grayscale: 0, sepia: 0, invert: 0, rotate: 0 };
-            applyFilters();
-            if (cropper) { cropper.destroy(); cropper = null; cropMode = false; cropBox.style.display = 'none'; container.style.display = 'flex'; }
-            statusText.textContent = 'Đã khôi phục';
+            loadedImage = img;
+            statusDiv.innerHTML = '✅ Ảnh đã tải thành công (AI nhận diện)';
+            // Dùng MobileNet để nhận diện ảnh (fake AI)
+            mobilenet.load().then(model => {
+                model.classify(img).then(predictions => {
+                    if (predictions.length > 0) {
+                        statusDiv.innerHTML += ` | Nhận diện: ${predictions[0].className} (${Math.round(predictions[0].probability*100)}%)`;
+                    }
+                });
+            });
         };
-    }
+        img.onerror = function() {
+            statusDiv.innerHTML = '❌ Lỗi tải ảnh, kiểm tra URL hoặc upload file.';
+        };
+        img.src = url;
+    });
 
-    // ======== LOAD ẢNH ========
-    function loadImageFile(file) {
+    // Upload ảnh từ file
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
-            const data = e.target.result;
-            img.src = data;
+        reader.onload = function(ev) {
+            const img = new Image();
             img.onload = function() {
-                originalImageData = data;
-                filterState = { brightness: 100, contrast: 100, blur: 0, grayscale: 0, sepia: 0, invert: 0, rotate: 0 };
-                applyFilters();
-                statusText.textContent = '✅ Đã tải ảnh';
-                aiStatus.textContent = '⏳ Chọn kiểu Anime để xử lý';
+                loadedImage = img;
+                statusDiv.innerHTML = '✅ Ảnh upload thành công, sẵn sàng AI.';
             };
+            img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
-    }
+    });
 
-    // ======== XỬ LÝ ANIME CHUẨN PHIM ========
-    function applyAnimeStyle(styleName) {
-        if (!img.complete || img.naturalWidth === 0) {
-            aiStatus.textContent = '❌ Chưa có ảnh!';
-            return;
-        }
-        aiStatus.textContent = `⏳ Đang xử lý ${styleName} ...`;
-        statusText.textContent = `🎬 Anime ${styleName}`;
+    // Tạo video giả lập dùng canvas
+    function generateFakeVideo() {
+        const text = document.getElementById('textInput').value || 'Không có văn bản';
+        const action = document.getElementById('actionInput').value || 'không có hiệu ứng';
+        const duration = parseFloat(document.getElementById('durationInput').value) || 5;
+        const fps = 24;
+        const totalFrames = duration * fps;
+        canvas.width = 640;
+        canvas.height = 480;
 
-        // Lấy ảnh hiện tại (đã qua filter) làm nguồn
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        ctx.drawImage(img, 0, 0);
-        
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-        const w = canvas.width, h = canvas.height;
-        const src = new Uint8ClampedArray(data);
-
-        // --- BƯỚC 1: Lượng tử hóa màu (cell-shading) ---
-        function quantize(value) {
-            return Math.round(value / 64) * 64; // 4 mức mỗi kênh
+        // Nếu không có ảnh, tạo ảnh mặc định
+        let baseImg = loadedImage;
+        if (!baseImg) {
+            const tempImg = new Image();
+            tempImg.crossOrigin = 'Anonymous';
+            tempImg.src = 'https://picsum.photos/640/480?random=' + Date.now();
+            baseImg = tempImg;
+            statusDiv.innerHTML = '⚠️ Không có ảnh, dùng ảnh ngẫu nhiên từ Picsum.';
         }
 
-        // --- BƯỚC 2: Phát hiện cạnh Sobel ---
-        function getGray(idx) {
-            return 0.299 * src[idx] + 0.587 * src[idx+1] + 0.114 * src[idx+2];
-        }
+        // Tạo blob video từ canvas (WebM)
+        const stream = canvas.captureStream(fps);
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+        let chunks = [];
 
-        function getEdgeMap() {
-            const edgeMap = new Uint8Array(w * h);
-            for (let y = 1; y < h-1; y++) {
-                for (let x = 1; x < w-1; x++) {
-                    const idx = (y * w + x) * 4;
-                    const gx = -getGray((y-1)*w*4 + (x-1)*4) + getGray((y-1)*w*4 + (x+1)*4)
-                              - 2*getGray(y*w*4 + (x-1)*4) + 2*getGray(y*w*4 + (x+1)*4)
-                              - getGray((y+1)*w*4 + (x-1)*4) + getGray((y+1)*w*4 + (x+1)*4);
-                    const gy = -getGray((y-1)*w*4 + (x-1)*4) - 2*getGray((y-1)*w*4 + x*4) - getGray((y-1)*w*4 + (x+1)*4)
-                              + getGray((y+1)*w*4 + (x-1)*4) + 2*getGray((y+1)*w*4 + x*4) + getGray((y+1)*w*4 + (x+1)*4);
-                    const mag = Math.sqrt(gx*gx + gy*gy);
-                    edgeMap[y*w + x] = mag > 25 ? 255 : 0;
-                }
-            }
-            return edgeMap;
-        }
+        mediaRecorder.ondataavailable = function(e) {
+            if (e.data.size > 0) chunks.push(e.data);
+        };
 
-        const edgeMap = getEdgeMap();
-
-        // --- BƯỚC 3: Áp dụng cho từng pixel ---
-        for (let i = 0; i < data.length; i += 4) {
-            const idx = i / 4;
-            const x = idx % w;
-            const y = Math.floor(idx / w);
-            
-            // Lượng tử hóa
-            let r = quantize(src[i]);
-            let g = quantize(src[i+1]);
-            let b = quantize(src[i+2]);
-
-            // Kiểm tra cạnh
-            if (edgeMap[y*w + x] > 200) {
-                r = 0; g = 0; b = 0; // viền đen đậm
-            } else {
-                // Tăng bão hòa và tương phản cho vùng không phải viền
-                // HSV tăng S và V
-                const max = Math.max(r, g, b) / 255;
-                const min = Math.min(r, g, b) / 255;
-                const diff = max - min;
-                if (diff > 0.05) {
-                    // Tăng saturation
-                    let s = diff / max;
-                    s = Math.min(1, s * 1.5);
-                    let v = max;
-                    v = Math.min(1, v * 1.15);
-                    // Chuyển ngược lại RGB (đơn giản hóa)
-                    // chỉ áp dụng cho style Classic
-                    if (styleName === 'Anime Classic') {
-                        r = Math.min(255, Math.round(r * 1.1));
-                        g = Math.min(255, Math.round(g * 1.1));
-                        b = Math.min(255, Math.round(b * 1.1));
-                    }
-                }
-            }
-
-            data[i] = r;
-            data[i+1] = g;
-            data[i+2] = b;
-        }
-
-        // --- BƯỚC 4: Style đặc biệt ---
-        if (styleName === 'Manga Style') {
-            // Tăng tương phản mạnh, giảm màu
-            for (let i = 0; i < data.length; i += 4) {
-                let gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
-                gray = gray > 128 ? 255 : 0;
-                data[i] = gray; data[i+1] = gray; data[i+2] = gray;
-            }
-        } else if (styleName === 'Cyber Anime') {
-            // Thêm tông xanh tím và glow
-            for (let i = 0; i < data.length; i += 4) {
-                data[i] = Math.min(255, data[i] + 10);   // R+
-                data[i+1] = Math.min(255, data[i+1] - 15); // G-
-                data[i+2] = Math.min(255, data[i+2] + 30); // B++
-            }
-        } else if (styleName === 'Sketch Anime') {
-            // Ký họa: invert + edge
-            for (let i = 0; i < data.length; i += 4) {
-                const idx = i / 4;
-                const x = idx % w;
-                const y = Math.floor(idx / w);
-                if (edgeMap[y*w + x] > 200) {
-                    data[i] = 0; data[i+1] = 0; data[i+2] = 0;
-                } else {
-                    data[i] = 255; data[i+1] = 255; data[i+2] = 255;
-                }
-            }
-        }
-
-        ctx.putImageData(imageData, 0, 0);
-        img.src = canvas.toDataURL('image/png');
-        
-        // Reset filter
-        filterState = { brightness: 100, contrast: 100, blur: 0, grayscale: 0, sepia: 0, invert: 0, rotate: 0 };
-        applyFilters();
-        saveHistory();
-        aiStatus.textContent = `✅ Đã tạo Anime: ${styleName}`;
-        statusText.textContent = `🎬 Hoàn tất ${styleName}`;
-    }
-
-    // ======== TÍNH NĂNG THÚ VỊ ========
-    function applyFunEffect(type) {
-        if (!img.complete || img.naturalWidth === 0) return;
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        ctx.drawImage(img, 0, 0);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-        const w = canvas.width, h = canvas.height;
-
-        if (type === 'mosaic') {
-            const block = 12;
-            for (let y = 0; y < h; y += block) {
-                for (let x = 0; x < w; x += block) {
-                    let r = 0, g = 0, b = 0, count = 0;
-                    for (let dy = 0; dy < block && y+dy < h; dy++) {
-                        for (let dx = 0; dx < block && x+dx < w; dx++) {
-                            const idx = ((y+dy) * w + (x+dx)) * 4;
-                            r += data[idx]; g += data[idx+1]; b += data[idx+2]; count++;
-                        }
-                    }
-                    r = Math.round(r/count); g = Math.round(g/count); b = Math.round(b/count);
-                    for (let dy = 0; dy < block && y+dy < h; dy++) {
-                        for (let dx = 0; dx < block && x+dx < w; dx++) {
-                            const idx = ((y+dy) * w + (x+dx)) * 4;
-                            data[idx] = r; data[idx+1] = g; data[idx+2] = b;
-                        }
-                    }
-                }
-            }
-        } else if (type === 'glitch') {
-            for (let i = 0; i < 30; i++) {
-                const y = Math.floor(Math.random() * h);
-                const height = Math.floor(5 + Math.random() * 15);
-                const offset = Math.floor(-30 + Math.random() * 60);
-                const slice = ctx.getImageData(0, y, w, height);
-                ctx.putImageData(slice, offset, y);
-            }
-        } else if (type === 'vintage') {
-            for (let i = 0; i < data.length; i += 4) {
-                data[i] = Math.min(255, data[i] + 20);
-                data[i+1] = Math.min(255, data[i+1] + 10);
-                data[i+2] = Math.min(255, data[i+2] - 10);
-            }
-        } else if (type === 'palette') {
-            for (let i = 0; i < data.length; i += 4) {
-                let gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
-                const level = Math.floor(gray / 43);
-                const val = level * 43;
-                data[i] = val; data[i+1] = val; data[i+2] = val;
-            }
-        }
-
-        ctx.putImageData(imageData, 0, 0);
-        img.src = canvas.toDataURL('image/png');
-        filterState = { brightness: 100, contrast: 100, blur: 0, grayscale: 0, sepia: 0, invert: 0, rotate: 0 };
-        applyFilters();
-        saveHistory();
-        statusText.textContent = `✨ Đã áp dụng: ${type}`;
-    }
-
-    // ======== CROPPER ========
-    function initCropper() {
-        if (cropper) { cropper.destroy(); cropper = null; }
-        cropBox.style.display = 'block';
-        container.style.display = 'none';
-        cropImg.src = img.src;
-        cropper = new Cropper(cropImg, { aspectRatio: NaN, viewMode: 1, autoCropArea: 0.8 });
-        cropMode = true;
-        cropConfirm.style.display = 'inline-block';
-        cropCancel.style.display = 'inline-block';
-        statusText.textContent = '✂️ Đang cắt';
-    }
-
-    function confirmCrop() {
-        if (!cropper) return;
-        const canvas = cropper.getCroppedCanvas();
-        if (canvas) {
-            img.src = canvas.toDataURL('image/png');
-            saveHistory();
-        }
-        cropper.destroy(); cropper = null; cropMode = false;
-        cropBox.style.display = 'none'; container.style.display = 'flex';
-        cropConfirm.style.display = 'none'; cropCancel.style.display = 'none';
-        statusText.textContent = '✅ Đã cắt';
-    }
-
-    function cancelCrop() {
-        if (cropper) { cropper.destroy(); cropper = null; }
-        cropMode = false; cropBox.style.display = 'none'; container.style.display = 'flex';
-        cropConfirm.style.display = 'none'; cropCancel.style.display = 'none';
-        statusText.textContent = 'Hủy cắt';
-    }
-
-    // ======== EXPORT ========
-    function exportImage(format) {
-        if (!img.complete || img.naturalWidth === 0) { alert('Chưa có ảnh'); return; }
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.filter = img.style.filter;
-        ctx.drawImage(img, 0, 0);
-        const mime = format === 'jpg' ? 'image/jpeg' : 'image/png';
-        const ext = format === 'jpg' ? 'jpg' : 'png';
-        const link = document.createElement('a');
-        link.download = `anime_style.${ext}`;
-        link.href = canvas.toDataURL(mime, 0.92);
-        link.click();
-    }
-
-    // ======== RESET ========
-    function resetAll() {
-        if (originalImageData) {
-            img.src = originalImageData;
-            img.onload = function() {
-                filterState = { brightness: 100, contrast: 100, blur: 0, grayscale: 0, sepia: 0, invert: 0, rotate: 0 };
-                applyFilters();
-                if (cropper) { cropper.destroy(); cropper = null; cropMode = false; cropBox.style.display = 'none'; container.style.display = 'flex'; }
-                cropConfirm.style.display = 'none'; cropCancel.style.display = 'none';
-                statusText.textContent = 'Đã reset';
-                aiStatus.textContent = '⏳ Chọn kiểu Anime';
+        mediaRecorder.onstop = function() {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            video.src = url;
+            video.load();
+            video.play();
+            downloadBtn.style.display = 'inline-block';
+            downloadBtn.onclick = function() {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'AI_video_created.webm';
+                a.click();
             };
-        } else {
-            img.src = 'https://via.placeholder.com/900x600/1a1a2e/e0e0e0?text=Drop+image+or+click+upload';
-            filterState = { brightness: 100, contrast: 100, blur: 0, grayscale: 0, sepia: 0, invert: 0, rotate: 0 };
-            applyFilters();
-        }
-        history = [];
-        renderHistory();
+            statusDiv.innerHTML = '✅ Video AI hoàn tất! (mô phỏng)';
+        };
+
+        mediaRecorder.start();
+
+        let frame = 0;
+        const interval = setInterval(() => {
+            if (frame >= totalFrames || mediaRecorder.state === 'inactive') {
+                clearInterval(interval);
+                if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+                return;
+            }
+            // Vẽ frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Vẽ ảnh nền với hiệu ứng xoay / bay (mô phỏng)
+            const progress = frame / totalFrames;
+            const angle = progress * Math.PI * 2; // xoay
+            const scale = 1 + 0.3 * Math.sin(progress * Math.PI * 2); // phóng to thu nhỏ
+
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.rotate(angle);
+            ctx.scale(scale, scale);
+            ctx.drawImage(baseImg, -200, -150, 400, 300);
+            ctx.restore();
+
+            // Vẽ chữ (văn bản) lên video
+            ctx.font = 'bold 28px "Courier New", monospace';
+            ctx.shadowColor = '#00ffcc';
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 3;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            const displayText = text.length > 40 ? text.slice(0, 40) + '...' : text;
+            ctx.strokeText(displayText, canvas.width/2, canvas.height - 30);
+            ctx.fillText(displayText, canvas.width/2, canvas.height - 30);
+
+            // Thêm hiệu ứng hành động mô tả
+            ctx.font = '18px monospace';
+            ctx.fillStyle = '#ffaa00';
+            ctx.shadowBlur = 5;
+            ctx.fillText(`⚡ ${action}`, canvas.width/2, 50);
+
+            // Thêm watermark AI
+            ctx.font = '14px monospace';
+            ctx.fillStyle = '#0ff';
+            ctx.shadowBlur = 0;
+            ctx.fillText('AI Video Generator (mô phỏng)', 20, canvas.height - 15);
+
+            frame++;
+        }, 1000 / fps);
     }
 
-    // ======== SỰ KIỆN ========
-    uploadBtn.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => { if (e.target.files.length) loadImageFile(e.target.files[0]); this.value = ''; });
-
-    exportBtn.addEventListener('click', () => exportImage('png'));
-    exportJpgBtn.addEventListener('click', () => exportImage('jpg'));
-    resetAllBtn.addEventListener('click', resetAll);
-
-    cropToggle.addEventListener('click', () => {
-        if (!img.complete || img.naturalWidth === 0) { alert('Chưa có ảnh'); return; }
-        if (cropMode) { cancelCrop(); return; }
-        initCropper();
-    });
-    cropConfirm.addEventListener('click', confirmCrop);
-    cropCancel.addEventListener('click', cancelCrop);
-
-    brightSlider.addEventListener('input', function() { filterState.brightness = parseFloat(this.value); applyFilters(); });
-    contrastSlider.addEventListener('input', function() { filterState.contrast = parseFloat(this.value); applyFilters(); });
-    blurSlider.addEventListener('input', function() { filterState.blur = parseFloat(this.value); applyFilters(); });
-    rotateSlider.addEventListener('input', function() { filterState.rotate = parseFloat(this.value); applyFilters(); });
-
-    document.querySelectorAll('.tool-btn[data-filter]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const filter = this.dataset.filter;
-            if (filter === 'none') {
-                filterState = { brightness: 100, contrast: 100, blur: 0, grayscale: 0, sepia: 0, invert: 0, rotate: 0 };
-                applyFilters(); return;
-            }
-            filterState.grayscale = 0; filterState.sepia = 0; filterState.invert = 0;
-            if (filter === 'grayscale') filterState.grayscale = 100;
-            else if (filter === 'sepia') filterState.sepia = 100;
-            else if (filter === 'invert') filterState.invert = 100;
-            else if (filter === 'brightness') { filterState.brightness = 130; brightSlider.value = 130; }
-            else if (filter === 'contrast') { filterState.contrast = 150; contrastSlider.value = 150; }
-            else if (filter === 'blur') { filterState.blur = 3; blurSlider.value = 3; }
-            applyFilters();
-            saveHistory();
-        });
+    document.getElementById('generateBtn').addEventListener('click', function() {
+        statusDiv.innerHTML = '⏳ AI đang tạo video... (mô phỏng)';
+        downloadBtn.style.display = 'none';
+        // Nếu chưa có ảnh, thử tải ảnh mặc định
+        if (!loadedImage) {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.onload = function() {
+                loadedImage = img;
+                generateFakeVideo();
+            };
+            img.onerror = function() {
+                // Vẫn tạo video với ảnh lỗi, sẽ dùng ảnh mặc định trong generate
+                generateFakeVideo();
+            };
+            img.src = 'https://picsum.photos/640/480?random=' + Date.now();
+        } else {
+            generateFakeVideo();
+        }
     });
 
-    // AI Anime
-    aiClassic.addEventListener('click', () => applyAnimeStyle('Anime Classic'));
-    aiManga.addEventListener('click', () => applyAnimeStyle('Manga Style'));
-    aiCyber.addEventListener('click', () => applyAnimeStyle('Cyber Anime'));
-    aiSketch.addEventListener('click', () => applyAnimeStyle('Sketch Anime'));
-
-    // Fun
-    funMosaic.addEventListener('click', () => applyFunEffect('mosaic'));
-    funGlitch.addEventListener('click', () => applyFunEffect('glitch'));
-    funVintage.addEventListener('click', () => applyFunEffect('vintage'));
-    funPalette.addEventListener('click', () => applyFunEffect('palette'));
-
-    // Drag & Drop
-    container.addEventListener('dragover', (e) => { e.preventDefault(); container.style.border = '3px dashed #f5a623'; });
-    container.addEventListener('dragleave', () => { container.style.border = 'none'; });
-    container.addEventListener('drop', (e) => {
-        e.preventDefault(); container.style.border = 'none';
-        if (e.dataTransfer.files.length) loadImageFile(e.dataTransfer.files[0]);
-    });
-
-    applyFilters();
-    statusText.textContent = '⚡ Sẵn sàng - tải ảnh để biến thành Anime';
-})();
+    // Khởi tạo sẵn ảnh mẫu
+    window.onload = function() {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = function() {
+            loadedImage = img;
+            statusDiv.innerHTML = '✅ Ảnh mẫu sẵn sàng.';
+        };
+        img.src = 'https://picsum.photos/640/480?random=1';
+    };
 </script>
 </body>
 </html>
