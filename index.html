@@ -1,320 +1,528 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kho Video</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Ảnh Toàn Năng - AI + Cắt Xén</title>
+    <!-- CropperJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <!-- TensorFlow.js cho AI style (mô phỏng) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        body {
-            background: #0a0a0a;
-            color: #fff;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 900px;
-            margin: auto;
-        }
-        h1 {
-            text-align: center;
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            color: #ff6b6b;
-        }
-        .sub {
-            text-align: center;
-            color: #888;
-            margin-bottom: 30px;
-            font-size: 0.95rem;
-        }
-        .upload-area {
-            background: #1e1e1e;
-            border: 2px dashed #444;
-            border-radius: 14px;
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-bottom: 30px;
-        }
-        .upload-area:hover {
-            border-color: #ff6b6b;
-            background: #252525;
-        }
-        .upload-area input {
-            display: none;
-        }
-        .upload-area label {
-            display: inline-block;
-            background: #ff6b6b;
-            color: #fff;
-            padding: 12px 30px;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .upload-area label:hover {
-            background: #e55a5a;
-            transform: scale(1.03);
-        }
-        .upload-area p {
-            margin-top: 14px;
-            color: #aaa;
-            font-size: 0.9rem;
-        }
-        /* Danh sách video */
-        .video-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .video-item {
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 16px;
-            border: 1px solid #2a2a2a;
-            transition: 0.3s;
-        }
-        .video-item:hover {
-            border-color: #ff6b6b;
-        }
-        .video-item video {
-            width: 100%;
-            max-height: 400px;
-            border-radius: 8px;
-            background: #000;
-        }
-        .video-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-        }
-        .video-name {
-            font-weight: bold;
-            color: #fff;
-            font-size: 1rem;
-            word-break: break-word;
-        }
-        .video-size {
-            color: #888;
-            font-size: 0.8rem;
-        }
-        .btn-delete {
-            background: #ff4444;
-            color: #fff;
-            border: none;
-            padding: 6px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: 0.3s;
-        }
-        .btn-delete:hover {
-            background: #cc0000;
-        }
-        .empty {
-            text-align: center;
-            color: #666;
-            padding: 40px 0;
-            font-style: italic;
-        }
-        /* Dung lượng */
-        .storage {
-            text-align: right;
-            color: #666;
-            font-size: 0.85rem;
-            margin-top: 16px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', monospace; background: #0d1117; color: #c9d1d9; padding: 20px; }
+        .container { max-width: 1500px; margin: 0 auto; background: #161b22; padding: 25px; border-radius: 16px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+        .tool-btn { background: #21262d; border: 1px solid #30363d; color: #f0f6fc; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; }
+        .tool-btn:hover { background: #30363d; border-color: #58a6ff; }
+        .tool-btn.active { background: #1f6feb; border-color: #58a6ff; }
+        .work-area { display: flex; flex-wrap: wrap; gap: 20px; }
+        .canvas-wrapper { flex: 3; min-width: 550px; background: #0d1117; border-radius: 12px; padding: 15px; border: 1px solid #30363d; }
+        #image-container { max-height: 600px; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #0d1117; position: relative; }
+        #image-preview { max-width: 100%; max-height: 550px; display: block; }
+        #cropper-box { display: none; margin: 10px 0; }
+        #cropper-box img { max-width: 100%; }
+        .controls-panel { flex: 1; min-width: 280px; background: #161b22; border-radius: 12px; padding: 20px; border: 1px solid #30363d; }
+        .ctrl-group { margin-bottom: 20px; }
+        .ctrl-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: #8b949e; }
+        .ctrl-group input[type="range"] { width: 100%; accent-color: #58a6ff; background: #21262d; }
+        .ctrl-group input[type="file"] { background: #21262d; border: 1px dashed #30363d; padding: 8px; border-radius: 6px; width: 100%; color: #c9d1d9; }
+        .row-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .action-btn { background: #238636; border: none; color: #fff; padding: 8px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
+        .action-btn.danger { background: #da3633; }
+        .action-btn.secondary { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; }
+        .action-btn.ai { background: #7c3aed; }
+        .ai-status { background: #0d1117; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 14px; border-left: 4px solid #58a6ff; min-height: 50px; }
+        .history-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
+        .history-btn { background: #21262d; border: 1px solid #30363d; color: #8b949e; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+        .history-btn:hover { border-color: #58a6ff; color: #f0f6fc; }
+        #file-input { display: none; }
+        @media (max-width: 700px) { .canvas-wrapper { min-width: 100%; } }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <h1>🎬 Kho Video</h1>
-        <p class="sub">Tải video lên và xem lại bất cứ lúc nào</p>
-
-        <!-- Khu vực upload -->
-        <div class="upload-area" id="uploadArea">
-            <input type="file" id="fileInput" accept="video/*" multiple />
-            <label for="fileInput">📤 Chọn video để tải lên</label>
-            <p>Hỗ trợ: MP4, WebM, AVI, MOV, MKV...</p>
-        </div>
-
-        <!-- Danh sách video -->
-        <div id="videoList" class="video-list">
-            <!-- Video sẽ hiển thị ở đây -->
-        </div>
-
-        <div class="storage" id="storageInfo">Đã dùng: 0 MB</div>
+<div class="container">
+    <div class="header">
+        <h2>⚡ STUDIO ẢNH - AI + CẮT XÉN</h2>
+        <div><span style="color:#8b949e;">Trạng thái:</span> <span id="status-text" style="color:#58a6ff;">Sẵn sàng</span></div>
     </div>
 
-    <script>
-        // ============ CHỈNH SỬA BẠN NHA ============
-        // MAX STORAGE: bộ nhớ tối đa (MB) - mặc định 500MB
-        const MAX_STORAGE_MB = 500;
+    <!-- Thanh công cụ chính -->
+    <div class="toolbar" id="main-toolbar">
+        <button class="tool-btn" data-filter="none">🔄 Gốc</button>
+        <button class="tool-btn" data-filter="grayscale">⚫ Đen trắng</button>
+        <button class="tool-btn" data-filter="sepia">🟫 Sepia</button>
+        <button class="tool-btn" data-filter="brightness">☀️ Sáng</button>
+        <button class="tool-btn" data-filter="contrast">🔲 Tương phản</button>
+        <button class="tool-btn" data-filter="blur">🌫️ Mờ</button>
+        <button class="tool-btn" data-filter="sharpen">🔪 Sắc nét</button>
+        <button class="tool-btn" data-filter="invert">🎭 Đảo màu</button>
+        <button class="tool-btn" id="crop-toggle">✂️ Cắt xén</button>
+        <button class="tool-btn" id="ai-style-btn">🤖 AI Style</button>
+        <button class="tool-btn" id="reset-all-btn">🔄 Reset toàn bộ</button>
+    </div>
 
-        // ============ CODE XỬ LÝ ============
-        const fileInput = document.getElementById('fileInput');
-        const videoList = document.getElementById('videoList');
-        const uploadArea = document.getElementById('uploadArea');
-        const storageInfo = document.getElementById('storageInfo');
+    <div class="work-area">
+        <div class="canvas-wrapper">
+            <div id="image-container">
+                <img id="image-preview" src="https://via.placeholder.com/900x500/2d333b/ffffff?text=Ch%E1%BB%8Dn+%E1%BA%A3nh+ho%E1%BA%B7c+k%C3%A9o+th%E1%BA%A3+v%C3%A0o+%C4%91%C3%A2y" alt="preview">
+            </div>
+            <div id="cropper-box"><img id="crop-image" src=""></div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+                <button class="action-btn" id="upload-btn">📤 Tải ảnh lên</button>
+                <button class="action-btn secondary" id="export-btn">⬇️ Xuất PNG</button>
+                <button class="action-btn secondary" id="export-jpg-btn">⬇️ Xuất JPG</button>
+                <button class="action-btn danger" id="crop-confirm" style="display:none;">✔ Xác nhận cắt</button>
+                <button class="action-btn danger" id="crop-cancel" style="display:none;">✖ Hủy cắt</button>
+            </div>
+            <div class="history-bar" id="history-bar"></div>
+            <input type="file" id="file-input" accept="image/*">
+        </div>
 
-        // Lấy danh sách video từ localStorage
-        function getVideos() {
-            try {
-                return JSON.parse(localStorage.getItem('videos')) || [];
-            } catch {
-                return [];
+        <div class="controls-panel">
+            <div class="ctrl-group">
+                <label>📐 Điều chỉnh nâng cao</label>
+                <label>Độ sáng: <span id="bright-val">100</span>%</label>
+                <input type="range" id="brightness-slider" min="0" max="200" value="100">
+                <label>Độ tương phản: <span id="contrast-val">100</span>%</label>
+                <input type="range" id="contrast-slider" min="0" max="200" value="100">
+                <label>Làm mờ: <span id="blur-val">0</span>px</label>
+                <input type="range" id="blur-slider" min="0" max="10" step="0.1" value="0">
+                <label>Xoay: <span id="rotate-val">0</span>°</label>
+                <input type="range" id="rotate-slider" min="-180" max="180" value="0">
+            </div>
+
+            <div class="ctrl-group">
+                <label>🧠 Tạo ảnh kiểu AI (mô phỏng)</label>
+                <div class="row-buttons">
+                    <button class="action-btn ai" id="ai-style-anime">🎨 Anime</button>
+                    <button class="action-btn ai" id="ai-style-oil">🖌️ Sơn dầu</button>
+                    <button class="action-btn ai" id="ai-style-cyber">💠 Cyberpunk</button>
+                    <button class="action-btn ai" id="ai-style-sketch">✏️ Ký họa</button>
+                </div>
+                <div class="ai-status" id="ai-status">⏳ Chọn kiểu AI để xử lý</div>
+            </div>
+
+            <div class="ctrl-group">
+                <label>📋 Lịch sử thao tác (lưu tối đa 5)</label>
+                <div id="history-list" style="font-size:12px; color:#8b949e; max-height:80px; overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// JAVASCRIPT XỬ LÝ CHÍNH - ĐẦY ĐỦ CHỨC NĂNG
+// ============================================================
+
+(function() {
+    'use strict';
+
+    // ----- DOM refs -----
+    const img = document.getElementById('image-preview');
+    const container = document.getElementById('image-container');
+    const fileInput = document.getElementById('file-input');
+    const cropBox = document.getElementById('cropper-box');
+    const cropImg = document.getElementById('crop-image');
+    const statusText = document.getElementById('status-text');
+    const aiStatus = document.getElementById('ai-status');
+
+    // Sliders
+    const brightSlider = document.getElementById('brightness-slider');
+    const contrastSlider = document.getElementById('contrast-slider');
+    const blurSlider = document.getElementById('blur-slider');
+    const rotateSlider = document.getElementById('rotate-slider');
+
+    // Nút
+    const uploadBtn = document.getElementById('upload-btn');
+    const exportBtn = document.getElementById('export-btn');
+    const exportJpgBtn = document.getElementById('export-jpg-btn');
+    const resetAllBtn = document.getElementById('reset-all-btn');
+    const cropToggle = document.getElementById('crop-toggle');
+    const cropConfirm = document.getElementById('crop-confirm');
+    const cropCancel = document.getElementById('crop-cancel');
+    const historyBar = document.getElementById('history-bar');
+    const historyList = document.getElementById('history-list');
+
+    // AI buttons
+    const aiAnime = document.getElementById('ai-style-anime');
+    const aiOil = document.getElementById('ai-style-oil');
+    const aiCyber = document.getElementById('ai-style-cyber');
+    const aiSketch = document.getElementById('ai-style-sketch');
+
+    // ----- State -----
+    let currentImageSrc = img.src;
+    let filterState = {
+        brightness: 100,
+        contrast: 100,
+        blur: 0,
+        grayscale: 0,
+        sepia: 0,
+        invert: 0,
+        rotate: 0,
+        sharpen: false
+    };
+    let history = []; // lưu dataURL tối đa 5
+    let cropper = null;
+    let cropMode = false;
+    let originalImageData = null; // lưu ảnh gốc để reset
+
+    // ----- Helper: cập nhật filter CSS -----
+    function applyFilters() {
+        const f = filterState;
+        let filterStr = `brightness(${f.brightness}%) contrast(${f.contrast}%) blur(${f.blur}px) grayscale(${f.grayscale}%) sepia(${f.sepia}%) invert(${f.invert}%)`;
+        img.style.filter = filterStr;
+        img.style.transform = `rotate(${f.rotate}deg)`;
+        // cập nhật hiển thị
+        document.getElementById('bright-val').textContent = f.brightness;
+        document.getElementById('contrast-val').textContent = f.contrast;
+        document.getElementById('blur-val').textContent = f.blur;
+        document.getElementById('rotate-val').textContent = f.rotate;
+        // cập nhật slider
+        brightSlider.value = f.brightness;
+        contrastSlider.value = f.contrast;
+        blurSlider.value = f.blur;
+        rotateSlider.value = f.rotate;
+        statusText.textContent = 'Đã áp dụng bộ lọc';
+    }
+
+    // ----- Lưu lịch sử (dataURL) -----
+    function saveHistory() {
+        if (!img.complete || img.naturalWidth === 0) return;
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.filter = img.style.filter;
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL('image/png');
+        history.push(dataUrl);
+        if (history.length > 5) history.shift();
+        renderHistory();
+    }
+
+    function renderHistory() {
+        historyBar.innerHTML = '';
+        historyList.innerHTML = '';
+        history.forEach((url, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'history-btn';
+            btn.textContent = `#${idx+1}`;
+            btn.title = 'Khôi phục trạng thái này';
+            btn.addEventListener('click', function() {
+                loadImageFromData(url);
+                statusText.textContent = `Đã khôi phục lịch sử #${idx+1}`;
+            });
+            historyBar.appendChild(btn);
+            const li = document.createElement('div');
+            li.textContent = `Ảnh ${idx+1} - ${new Date().toLocaleTimeString()}`;
+            historyList.appendChild(li);
+        });
+    }
+
+    // ----- Load ảnh từ dataURL -----
+    function loadImageFromData(dataUrl) {
+        img.src = dataUrl;
+        img.onload = function() {
+            currentImageSrc = dataUrl;
+            // reset filter nhưng giữ nguyên
+            filterState.brightness = 100;
+            filterState.contrast = 100;
+            filterState.blur = 0;
+            filterState.grayscale = 0;
+            filterState.sepia = 0;
+            filterState.invert = 0;
+            filterState.rotate = 0;
+            filterState.sharpen = false;
+            applyFilters();
+            if (cropper) { cropper.destroy(); cropper = null; cropMode = false; cropBox.style.display = 'none'; container.style.display = 'flex'; }
+            statusText.textContent = 'Đã tải ảnh';
+        };
+    }
+
+    // ----- Tải ảnh từ file -----
+    function loadImageFile(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            loadImageFromData(e.target.result);
+            originalImageData = e.target.result;
+            statusText.textContent = 'Đã tải ảnh từ file';
+            aiStatus.textContent = '✅ Ảnh mới sẵn sàng cho AI';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ----- Cắt xén (Cropper) -----
+    function initCropper() {
+        if (cropper) { cropper.destroy(); cropper = null; }
+        cropBox.style.display = 'block';
+        container.style.display = 'none';
+        cropImg.src = img.src;
+        cropper = new Cropper(cropImg, {
+            aspectRatio: NaN,
+            viewMode: 1,
+            autoCropArea: 0.8,
+            responsive: true,
+        });
+        cropMode = true;
+        cropConfirm.style.display = 'inline-block';
+        cropCancel.style.display = 'inline-block';
+        statusText.textContent = '✂️ Đang cắt - kéo vùng chọn';
+    }
+
+    function confirmCrop() {
+        if (!cropper) return;
+        const canvas = cropper.getCroppedCanvas();
+        if (canvas) {
+            const dataUrl = canvas.toDataURL('image/png');
+            loadImageFromData(dataUrl);
+            saveHistory();
+        }
+        cropper.destroy();
+        cropper = null;
+        cropMode = false;
+        cropBox.style.display = 'none';
+        container.style.display = 'flex';
+        cropConfirm.style.display = 'none';
+        cropCancel.style.display = 'none';
+        statusText.textContent = '✅ Đã cắt xén';
+    }
+
+    function cancelCrop() {
+        if (cropper) { cropper.destroy(); cropper = null; }
+        cropMode = false;
+        cropBox.style.display = 'none';
+        container.style.display = 'flex';
+        cropConfirm.style.display = 'none';
+        cropCancel.style.display = 'none';
+        statusText.textContent = 'Đã hủy cắt';
+    }
+
+    // ----- Xuất ảnh -----
+    function exportImage(format = 'png') {
+        if (!img.complete || img.naturalWidth === 0) {
+            alert('Chưa có ảnh để xuất');
+            return;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.filter = img.style.filter;
+        ctx.drawImage(img, 0, 0);
+        const mime = format === 'jpg' ? 'image/jpeg' : 'image/png';
+        const ext = format === 'jpg' ? 'jpg' : 'png';
+        const dataUrl = canvas.toDataURL(mime, 0.92);
+        const link = document.createElement('a');
+        link.download = `export.${ext}`;
+        link.href = dataUrl;
+        link.click();
+        statusText.textContent = `Đã xuất ${format.toUpperCase()}`;
+    }
+
+    // ----- AI Style (mô phỏng bằng canvas filter tổ hợp) -----
+    function applyAIStyle(style) {
+        if (!img.complete || img.naturalWidth === 0) {
+            aiStatus.textContent = '❌ Chưa có ảnh để áp dụng AI';
+            return;
+        }
+        aiStatus.textContent = `⏳ Đang xử lý AI: ${style} ...`;
+        statusText.textContent = `AI ${style} đang chạy`;
+
+        // Reset filter trước
+        filterState.brightness = 100;
+        filterState.contrast = 100;
+        filterState.blur = 0;
+        filterState.grayscale = 0;
+        filterState.sepia = 0;
+        filterState.invert = 0;
+        filterState.rotate = 0;
+
+        // Áp dụng tổ hợp filter mô phỏng style
+        switch(style) {
+            case 'anime':
+                filterState.brightness = 115;
+                filterState.contrast = 130;
+                filterState.sharpen = true;
+                break;
+            case 'oil':
+                filterState.contrast = 140;
+                filterState.blur = 0.8;
+                filterState.brightness = 105;
+                break;
+            case 'cyber':
+                filterState.invert = 20;
+                filterState.contrast = 160;
+                filterState.brightness = 110;
+                filterState.sepia = 10;
+                break;
+            case 'sketch':
+                filterState.grayscale = 100;
+                filterState.contrast = 180;
+                filterState.brightness = 120;
+                break;
+            default: break;
+        }
+
+        applyFilters();
+
+        // Nếu có sharpen, xử lý thêm bằng canvas
+        if (filterState.sharpen) {
+            sharpenImage();
+        }
+
+        saveHistory();
+        aiStatus.textContent = `✅ Đã áp dụng AI: ${style.toUpperCase()}`;
+        statusText.textContent = `AI ${style} hoàn tất`;
+    }
+
+    // ----- Sharpening bằng canvas -----
+    function sharpenImage() {
+        if (!img.complete || img.naturalWidth === 0) return;
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const kernel = [0, -1, 0, -1, 5, -1, 0, -1, 0];
+        const side = 3, half = 1;
+        const w = canvas.width, h = canvas.height;
+        const src = new Uint8ClampedArray(data);
+        for (let y = half; y < h - half; y++) {
+            for (let x = half; x < w - half; x++) {
+                let r = 0, g = 0, b = 0;
+                for (let ky = 0; ky < side; ky++) {
+                    for (let kx = 0; kx < side; kx++) {
+                        const idx = ((y + ky - half) * w + (x + kx - half)) * 4;
+                        const k = kernel[ky * side + kx];
+                        r += src[idx] * k;
+                        g += src[idx+1] * k;
+                        b += src[idx+2] * k;
+                    }
+                }
+                const idx = (y * w + x) * 4;
+                data[idx] = Math.min(255, Math.max(0, r));
+                data[idx+1] = Math.min(255, Math.max(0, g));
+                data[idx+2] = Math.min(255, Math.max(0, b));
             }
         }
+        ctx.putImageData(imageData, 0, 0);
+        img.src = canvas.toDataURL('image/png');
+        // reset sharpen flag
+        filterState.sharpen = false;
+    }
 
-        // Lưu danh sách video vào localStorage
-        function saveVideos(videos) {
-            localStorage.setItem('videos', JSON.stringify(videos));
+    // ----- Reset toàn bộ -----
+    function resetAll() {
+        if (originalImageData) {
+            loadImageFromData(originalImageData);
+        } else {
+            img.src = 'https://via.placeholder.com/900x500/2d333b/ffffff?text=Ch%E1%BB%8Dn+%E1%BA%A3nh+ho%E1%BA%B7c+k%C3%A9o+th%E1%BA%A3+v%C3%A0o+%C4%91%C3%A2y';
+            filterState.brightness = 100; filterState.contrast = 100; filterState.blur = 0;
+            filterState.grayscale = 0; filterState.sepia = 0; filterState.invert = 0; filterState.rotate = 0;
+            applyFilters();
         }
+        if (cropper) { cropper.destroy(); cropper = null; cropMode = false; cropBox.style.display = 'none'; container.style.display = 'flex'; }
+        cropConfirm.style.display = 'none'; cropCancel.style.display = 'none';
+        history = [];
+        renderHistory();
+        statusText.textContent = 'Đã reset toàn bộ';
+        aiStatus.textContent = '⏳ Chọn kiểu AI để xử lý';
+    }
 
-        // Tính tổng dung lượng đã dùng (MB)
-        function getTotalSizeMB(videos) {
-            const totalBytes = videos.reduce((sum, v) => sum + (v.size || 0), 0);
-            return totalBytes / (1024 * 1024);
-        }
+    // ----- Sự kiện -----
+    // Upload
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length) loadImageFile(e.target.files[0]);
+        this.value = '';
+    });
 
-        // Định dạng kích thước
-        function formatSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-        }
+    // Export
+    exportBtn.addEventListener('click', () => exportImage('png'));
+    exportJpgBtn.addEventListener('click', () => exportImage('jpg'));
 
-        // Hiển thị danh sách video
-        function renderVideos() {
-            const videos = getVideos();
-            const totalMB = getTotalSizeMB(videos);
+    // Reset
+    resetAllBtn.addEventListener('click', resetAll);
 
-            // Cập nhật dung lượng
-            storageInfo.textContent = `Đã dùng: ${totalMB.toFixed(1)} MB / ${MAX_STORAGE_MB} MB`;
+    // Crop
+    cropToggle.addEventListener('click', function() {
+        if (!img.complete || img.naturalWidth === 0) { alert('Chưa có ảnh để cắt'); return; }
+        if (cropMode) { cancelCrop(); return; }
+        initCropper();
+    });
+    cropConfirm.addEventListener('click', confirmCrop);
+    cropCancel.addEventListener('click', cancelCrop);
 
-            if (videos.length === 0) {
-                videoList.innerHTML = `<div class="empty">📭 Chưa có video nào. Hãy tải lên nhé!</div>`;
+    // Sliders
+    brightSlider.addEventListener('input', function() {
+        filterState.brightness = parseFloat(this.value);
+        applyFilters();
+    });
+    contrastSlider.addEventListener('input', function() {
+        filterState.contrast = parseFloat(this.value);
+        applyFilters();
+    });
+    blurSlider.addEventListener('input', function() {
+        filterState.blur = parseFloat(this.value);
+        applyFilters();
+    });
+    rotateSlider.addEventListener('input', function() {
+        filterState.rotate = parseFloat(this.value);
+        applyFilters();
+    });
+
+    // Toolbar filters
+    document.querySelectorAll('.tool-btn[data-filter]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+            if (filter === 'none') {
+                filterState.brightness = 100; filterState.contrast = 100; filterState.blur = 0;
+                filterState.grayscale = 0; filterState.sepia = 0; filterState.invert = 0;
+                applyFilters();
                 return;
             }
-
-            let html = '';
-            videos.forEach((video, index) => {
-                html += `
-                        <div class="video-item">
-                            <video controls>
-                                <source src="${video.data}" type="${video.type || 'video/mp4'}">
-                                Trình duyệt không hỗ trợ video.
-                            </video>
-                            <div class="video-info">
-                                <span class="video-name">📹 ${video.name}</span>
-                                <span class="video-size">${formatSize(video.size)}</span>
-                                <button class="btn-delete" data-index="${index}">Xóa</button>
-                            </div>
-                        </div>
-                    `;
-            });
-            videoList.innerHTML = html;
-
-            // Gán sự kiện xóa
-            document.querySelectorAll('.btn-delete').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const idx = parseInt(this.dataset.index);
-                    deleteVideo(idx);
-                });
-            });
-        }
-
-        // Xóa video
-        function deleteVideo(index) {
-            const videos = getVideos();
-            videos.splice(index, 1);
-            saveVideos(videos);
-            renderVideos();
-        }
-
-        // Thêm video mới
-        function addVideo(file) {
-            const videos = getVideos();
-            const totalMB = getTotalSizeMB(videos);
-            const fileMB = file.size / (1024 * 1024);
-
-            // Kiểm tra dung lượng
-            if (totalMB + fileMB > MAX_STORAGE_MB) {
-                alert(`❌ Vượt quá dung lượng cho phép ${MAX_STORAGE_MB} MB!\nHiện tại: ${totalMB.toFixed(1)} MB\nVideo này: ${fileMB.toFixed(1)} MB`);
-                return false;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const videoData = {
-                    name: file.name,
-                    size: file.size,
-                    type: file.type,
-                    data: e.target.result, // base64
-                };
-                videos.push(videoData);
-                saveVideos(videos);
-                renderVideos();
-            };
-            reader.readAsDataURL(file);
-            return true;
-        }
-
-        // Xử lý upload
-        function handleFiles(files) {
-            let added = 0;
-            for (let file of files) {
-                if (file.type.startsWith('video/')) {
-                    const success = addVideo(file);
-                    if (success) added++;
-                } else {
-                    alert(`⚠️ "${file.name}" không phải là video.`);
-                }
-            }
-            if (added > 0) {
-                // Reset input để có thể upload lại cùng file
-                fileInput.value = '';
-            }
-        }
-
-        // Sự kiện upload
-        fileInput.addEventListener('change', function() {
-            handleFiles(this.files);
+            // reset các filter đặc biệt
+            filterState.grayscale = 0; filterState.sepia = 0; filterState.invert = 0;
+            if (filter === 'grayscale') filterState.grayscale = 100;
+            else if (filter === 'sepia') filterState.sepia = 100;
+            else if (filter === 'invert') filterState.invert = 100;
+            else if (filter === 'brightness') { filterState.brightness = 130; brightSlider.value = 130; }
+            else if (filter === 'contrast') { filterState.contrast = 150; contrastSlider.value = 150; }
+            else if (filter === 'blur') { filterState.blur = 3; blurSlider.value = 3; }
+            else if (filter === 'sharpen') { sharpenImage(); saveHistory(); return; }
+            applyFilters();
+            saveHistory();
         });
+    });
 
-        // Kéo thả
-        uploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.style.borderColor = '#ff6b6b';
-            this.style.background = '#252525';
-        });
-        uploadArea.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            this.style.borderColor = '#444';
-            this.style.background = '#1e1e1e';
-        });
-        uploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.style.borderColor = '#444';
-            this.style.background = '#1e1e1e';
-            if (e.dataTransfer.files.length) {
-                handleFiles(e.dataTransfer.files);
-            }
-        });
+    // AI buttons
+    aiAnime.addEventListener('click', () => applyAIStyle('anime'));
+    aiOil.addEventListener('click', () => applyAIStyle('oil'));
+    aiCyber.addEventListener('click', () => applyAIStyle('cyber'));
+    aiSketch.addEventListener('click', () => applyAIStyle('sketch'));
 
-        // Khởi chạy
-        renderVideos();
-    </script>
+    // Kéo thả file vào container
+    container.addEventListener('dragover', (e) => { e.preventDefault(); container.style.border = '2px dashed #58a6ff'; });
+    container.addEventListener('dragleave', () => { container.style.border = 'none'; });
+    container.addEventListener('drop', (e) => {
+        e.preventDefault();
+        container.style.border = 'none';
+        const files = e.dataTransfer.files;
+        if (files.length) loadImageFile(files[0]);
+    });
 
+    // Khởi tạo lần đầu
+    applyFilters();
+    statusText.textContent = 'Sẵn sàng - tải ảnh lên để bắt đầu';
+
+})();
+</script>
 </body>
 </html>
