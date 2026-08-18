@@ -223,17 +223,18 @@
     .upload-area label i { color: #f39c12; }
     #fileInput, #fileInputVip { display: none; }
 
-    /* Video grid */
+    /* Video grid - 2 cột gọn */
     .video-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 1.8rem 1.2rem; margin-top: 1rem;
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 1.2rem; margin-top: 1rem;
     }
     .video-card {
-      background: #1a1a2e; border-radius: 20px; overflow: hidden;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1px solid #2a2a4a;
+      background: #1a1a2e; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3); border: 1px solid #2a2a4a;
       transition: 0.15s;
+      display: flex; flex-direction: column;
     }
-    .video-card:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(0,0,0,0.5); }
+    .video-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
     .video-wrapper {
       background: #0d0d1a; aspect-ratio: 16/9; display: flex;
       align-items: center; justify-content: center; position: relative;
@@ -244,32 +245,32 @@
     }
     .video-wrapper .play-icon {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: rgba(243, 156, 18, 0.9); width: 60px; height: 60px;
+      background: rgba(243, 156, 18, 0.9); width: 50px; height: 50px;
       border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      color: #1a1a2e; font-size: 1.5rem; transition: 0.3s;
+      color: #1a1a2e; font-size: 1.2rem; transition: 0.3s;
     }
     .video-wrapper:hover .play-icon { transform: translate(-50%, -50%) scale(1.1); }
     .video-wrapper video {
       width: 100%; height: 100%; object-fit: contain; display: none;
     }
     .video-wrapper .view-count-overlay {
-      position: absolute; bottom: 10px; right: 10px;
+      position: absolute; bottom: 8px; right: 8px;
       background: rgba(0,0,0,0.7); color: #fff;
-      padding: 4px 12px; border-radius: 20px;
-      font-size: 0.75rem; display: flex; align-items: center; gap: 5px;
+      padding: 2px 10px; border-radius: 16px;
+      font-size: 0.7rem; display: flex; align-items: center; gap: 4px;
     }
-    .card-body { padding: 0.8rem 1rem 1rem; }
+    .card-body { padding: 0.6rem 0.8rem 0.8rem; }
     .video-title {
-      font-weight: 600; font-size: 1rem; color: #fff;
-      margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+      font-weight: 600; font-size: 0.9rem; color: #fff;
+      margin-bottom: 2px; display: flex; align-items: center; gap: 6px;
     }
     .video-title .vn-tag {
-      background: #e74c3c; color: #fff; font-size: 0.6rem;
-      padding: 2px 8px; border-radius: 4px; font-weight: 700;
+      background: #e74c3c; color: #fff; font-size: 0.55rem;
+      padding: 1px 6px; border-radius: 3px; font-weight: 700;
     }
     .video-description {
-      font-size: 0.85rem; color: #8a8aaa;
-      margin: 6px 0 8px; line-height: 1.4;
+      font-size: 0.78rem; color: #8a8aaa;
+      margin: 3px 0 4px; line-height: 1.3;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .video-description .views {
@@ -277,26 +278,20 @@
     }
     .video-meta {
       display: flex; justify-content: space-between; align-items: center;
-      font-size: 0.75rem; color: #4a4a6a; margin: 4px 0 8px;
+      font-size: 0.65rem; color: #4a4a6a; margin: 2px 0 4px;
     }
-    .video-views {
-      display: flex; align-items: center; gap: 5px;
-      background: #0d0d1a; padding: 2px 10px; border-radius: 20px;
-      font-weight: 500; color: #ccc;
-    }
-    .video-views i { color: #f39c12; }
-    .card-actions { display: flex; gap: 8px; border-top: 1px solid #2a2a4a; padding-top: 10px; flex-wrap: wrap; }
+    .card-actions { display: flex; gap: 6px; border-top: 1px solid #2a2a4a; padding-top: 6px; flex-wrap: wrap; }
     .btn {
-      border: none; padding: 0.3rem 0.9rem; border-radius: 40px;
-      font-size: 0.7rem; font-weight: 600; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 5px;
+      border: none; padding: 0.2rem 0.7rem; border-radius: 30px;
+      font-size: 0.65rem; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 4px;
       background: #2a2a4a; color: #ccc; transition: 0.2s;
     }
     .btn:hover { background: #3a3a5a; }
     .btn-download { background: #2a4a2a; color: #7dcea0; }
     .btn-download:hover { background: #3a5a3a; }
-    .btn-delete { background: #4a2a2a; color: #e74c3c; margin-left: auto; }
-    .btn-delete:hover { background: #5a3a3a; }
+    .btn-watch { background: #2a3a5a; color: #7d9cea; }
+    .btn-watch:hover { background: #3a4a6a; }
     .btn-admin-delete { background: #4a2a2a; color: #e74c3c; }
     .btn-admin-delete:hover { background: #5a3a3a; }
 
@@ -430,6 +425,36 @@
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* ===== MUTE MODAL ===== */
+    .mute-modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
+      justify-content: center; align-items: center; z-index: 2000;
+    }
+    .mute-modal.active { display: flex; }
+    .mute-modal-box {
+      background: #1a1a2e; padding: 2rem; border-radius: 32px;
+      max-width: 440px; width: 90%; border: 2px solid #e74c3c;
+      box-shadow: 0 20px 60px rgba(231, 76, 60, 0.2);
+    }
+    .mute-modal-box .mute-icon {
+      text-align: center; font-size: 3rem; color: #e74c3c; margin-bottom: 1rem;
+    }
+    .mute-modal-box h3 { color: #e74c3c; text-align: center; margin-bottom: 0.5rem; }
+    .mute-modal-box p { color: #8a8aaa; text-align: center; margin-bottom: 0.5rem; }
+    .mute-modal-box .time-left { color: #f39c12; font-weight: 700; font-size: 1.1rem; text-align: center; }
+    .mute-modal-box .contact-admin {
+      color: #7d9cea; text-align: center; margin-top: 1rem;
+      padding: 0.8rem; background: #0d0d1a; border-radius: 12px;
+      border: 1px solid #2a2a4a;
+    }
+    .mute-modal-box .close-mute-btn {
+      display: block; margin: 1rem auto 0; padding: 0.5rem 2rem;
+      background: #2a2a4a; border: none; border-radius: 40px;
+      color: #ccc; font-weight: 600; cursor: pointer;
+    }
+    .mute-modal-box .close-mute-btn:hover { background: #3a3a5a; }
 
     @media (max-width: 600px) {
       .auth-container { padding: 1.8rem 1.2rem; }
@@ -646,6 +671,10 @@
             <button class="btn-misc btn-misc-danger" id="muteBtn"><i class="fas fa-ban"></i> Mute</button>
             <button class="btn-misc btn-misc-success" id="unmuteBtn"><i class="fas fa-volume-up"></i> Unmute</button>
           </div>
+          <div class="misc-row" style="margin-top:10px;">
+            <button class="btn-misc btn-misc-danger" id="muteAllBtn"><i class="fas fa-ban"></i> Mute All</button>
+            <button class="btn-misc btn-misc-success" id="unmuteAllBtn"><i class="fas fa-volume-up"></i> Unmute All</button>
+          </div>
         </div>
 
         <!-- Cấp thêm thời gian VIP -->
@@ -684,6 +713,21 @@
     </div>
 
     <div class="footer-note"><i class="fas fa-database"></i> Dữ liệu lưu trên trình duyệt</div>
+  </div>
+
+  <!-- ====== MUTE MODAL ====== -->
+  <div class="mute-modal" id="muteModal">
+    <div class="mute-modal-box">
+      <div class="mute-icon"><i class="fas fa-volume-mute"></i></div>
+      <h3>⚠️ Bạn đã bị MUTE</h3>
+      <p>Bạn không thể xem video trong thời gian này</p>
+      <div class="time-left" id="muteTimeLeft"></div>
+      <div class="contact-admin">
+        <i class="fas fa-headset"></i> Liên hệ Admin để mở Mute<br>
+        <span style="color:#f39c12;font-weight:600;">📱 Zalo: 0325976017</span>
+      </div>
+      <button class="close-mute-btn" id="closeMuteModal"><i class="fas fa-times"></i> Đóng</button>
+    </div>
   </div>
 
 </div>
@@ -746,7 +790,10 @@
       if (left <= 0) return null;
       const hours = Math.floor(left / 3600000);
       const minutes = Math.floor((left % 3600000) / 60000);
-      return `${hours}h ${minutes}m`;
+      const seconds = Math.floor((left % 60000) / 1000);
+      if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+      if (minutes > 0) return `${minutes}m ${seconds}s`;
+      return `${seconds}s`;
     }
 
     function ensureAdmin() {
@@ -813,11 +860,17 @@
     const muteDuration = document.getElementById('muteDuration');
     const muteBtn = document.getElementById('muteBtn');
     const unmuteBtn = document.getElementById('unmuteBtn');
+    const muteAllBtn = document.getElementById('muteAllBtn');
+    const unmuteAllBtn = document.getElementById('unmuteAllBtn');
     const extendUsername = document.getElementById('extendUsername');
     const extendDuration = document.getElementById('extendDuration');
     const extendBtn = document.getElementById('extendBtn');
     const extendAllDuration = document.getElementById('extendAllDuration');
     const extendAllBtn = document.getElementById('extendAllBtn');
+
+    const muteModal = document.getElementById('muteModal');
+    const muteTimeLeft = document.getElementById('muteTimeLeft');
+    const closeMuteModal = document.getElementById('closeMuteModal');
 
     // ========== HELPERS ==========
     let currentPage = 1;
@@ -1157,10 +1210,16 @@
       viewOverlay.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(video.views || 0)}`;
       wrapper.appendChild(viewOverlay);
 
-      // Click to play
-      let isPlaying = false;
-      let viewsUpdated = false;
+      // Click to play - Check mute status
       wrapper.addEventListener('click', function() {
+        const user = getCurrentUser();
+        if (user && isMuted(user)) {
+          const timeLeft = getMutedTimeLeft(user);
+          muteTimeLeft.textContent = timeLeft ? `⏱️ Còn lại: ${timeLeft}` : '⏱️ Vĩnh viễn';
+          muteModal.classList.add('active');
+          return;
+        }
+        
         if (!isPlaying) {
           videoEl.style.display = 'block';
           thumbImg.style.display = 'none';
@@ -1168,13 +1227,11 @@
           videoEl.play();
           isPlaying = true;
           
-          // Update view count after 1 second of playing
           if (!viewsUpdated) {
             setTimeout(() => {
               if (videoEl.currentTime > 0.5) {
                 video.views = (video.views || 0) + 1;
                 viewOverlay.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(video.views)}`;
-                // Save to storage
                 const user = getCurrentUser();
                 if (user) {
                   const library = isVip ? window._vipVideoLibrary : window._videoLibrary;
@@ -1190,6 +1247,9 @@
           }
         }
       });
+
+      let isPlaying = false;
+      let viewsUpdated = false;
 
       videoEl.addEventListener('ended', function() {
         videoEl.style.display = 'none';
@@ -1207,7 +1267,7 @@
       
       const description = document.createElement('div');
       description.className = 'video-description';
-      description.innerHTML = video.description || 'Phim heo Trần Hà Linh với bạn trai mới';
+      description.innerHTML = video.description || 'Nhập mô tả';
       description.innerHTML += ` <span class="views">${formatViews(video.views || 0)} lượt xem</span>`;
 
       const meta = document.createElement('div');
@@ -1218,6 +1278,22 @@
 
       const actions = document.createElement('div');
       actions.className = 'card-actions';
+
+      // Watch button
+      const watchBtn = document.createElement('button');
+      watchBtn.className = 'btn btn-watch';
+      watchBtn.innerHTML = '<i class="fas fa-play"></i> Xem';
+      watchBtn.onclick = () => {
+        const user = getCurrentUser();
+        if (user && isMuted(user)) {
+          const timeLeft = getMutedTimeLeft(user);
+          muteTimeLeft.textContent = timeLeft ? `⏱️ Còn lại: ${timeLeft}` : '⏱️ Vĩnh viễn';
+          muteModal.classList.add('active');
+          return;
+        }
+        wrapper.click();
+      };
+      actions.appendChild(watchBtn);
 
       const downloadBtn = document.createElement('button');
       downloadBtn.className = 'btn btn-download';
@@ -1235,7 +1311,7 @@
       if (user === 'Nduc') {
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn btn-admin-delete';
-        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Xóa';
+        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
         deleteBtn.onclick = (e) => {
           e.stopPropagation();
           if (confirm(`Xóa video "${video.name}"?`)) {
@@ -1278,7 +1354,6 @@
         try {
           const dataURL = e.target.result;
           
-          // Extract thumbnail
           const video = document.createElement('video');
           video.src = dataURL;
           await new Promise((resolve) => {
@@ -1304,17 +1379,17 @@
             lastModified: file.lastModified,
             dataURL: dataURL,
             thumbnail: thumbnail,
-            description: prompt('Nhập mô tả cho video:', 'Phim heo Trần Hà Linh với bạn trai mới') || 'Không có mô tả',
+            description: prompt('Nhập mô tả cho video:', 'Nhập mô tả') || 'Nhập mô tả',
             views: 0,
             createdAt: Date.now()
           };
           
           if (isVip) {
             if (!window._vipVideoLibrary) window._vipVideoLibrary = [];
-            window._vipVideoLibrary.push(entry);
+            window._vipVideoLibrary.unshift(entry); // Thêm vào đầu
           } else {
             if (!window._videoLibrary) window._videoLibrary = [];
-            window._videoLibrary.push(entry);
+            window._videoLibrary.unshift(entry); // Thêm vào đầu
           }
           
           const user = getCurrentUser();
@@ -1467,6 +1542,35 @@
       renderVipAccounts();
     }
 
+    function muteAllAccounts() {
+      if (!confirm('Mute tất cả tài khoản (trừ Admin)?')) return;
+      
+      const users = getUsers();
+      const muted = getMutedAccounts();
+      const duration = '7d'; // Mặc định 7 ngày
+      const expiry = Date.now() + getDurationMs(duration);
+      
+      let count = 0;
+      for (const username in users) {
+        if (username !== 'Nduc') {
+          muted[username] = expiry;
+          count++;
+        }
+      }
+      
+      saveMutedAccounts(muted);
+      renderVipAccounts();
+      alert(`Đã mute ${count} tài khoản thành công!`);
+    }
+
+    function unmuteAllAccounts() {
+      if (!confirm('Unmute tất cả tài khoản?')) return;
+      
+      saveMutedAccounts({});
+      renderVipAccounts();
+      alert('Đã unmute tất cả tài khoản!');
+    }
+
     function extendVipTime() {
       const username = extendUsername.value.trim();
       if (!username) { alert('Vui lòng nhập tên tài khoản VIP.'); return; }
@@ -1506,7 +1610,6 @@
       
       let count = 0;
       for (const acc of vipAccounts) {
-        // Chỉ cấp cho VIP đang hoạt động (chưa hết hạn)
         const isActive = acc.expiry === 'forever' || acc.expiry > Date.now();
         if (isActive && acc.expiry !== 'forever') {
           const currentExpiry = acc.expiry;
@@ -1612,7 +1715,6 @@
       this.value = '';
     });
 
-    // Drag and drop
     document.addEventListener('dragover', function(e) { e.preventDefault(); });
     document.addEventListener('drop', function(e) {
       e.preventDefault();
@@ -1632,11 +1734,21 @@
 
     muteBtn.addEventListener('click', muteAccount);
     unmuteBtn.addEventListener('click', unmuteAccount);
+    muteAllBtn.addEventListener('click', muteAllAccounts);
+    unmuteAllBtn.addEventListener('click', unmuteAllAccounts);
     extendBtn.addEventListener('click', extendVipTime);
     extendAllBtn.addEventListener('click', extendAllVip);
 
     muteUsername.addEventListener('keyup', function(e) { if (e.key === 'Enter') muteBtn.click(); });
     extendUsername.addEventListener('keyup', function(e) { if (e.key === 'Enter') extendBtn.click(); });
+
+    // Mute modal close
+    closeMuteModal.addEventListener('click', function() {
+      muteModal.classList.remove('active');
+    });
+    muteModal.addEventListener('click', function(e) {
+      if (e.target === muteModal) muteModal.classList.remove('active');
+    });
 
     // ========== INIT ==========
     const current = getCurrentUser();
