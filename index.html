@@ -351,12 +351,21 @@
       font-size: 0.9rem; flex-wrap: wrap; gap: 6px; color: #ccc;
     }
     .vip-account-list .vip-item:last-child { border-bottom: none; }
-    .vip-item .vip-info { display: flex; gap: 12px; flex-wrap: wrap; }
+    .vip-item .vip-info { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
     .vip-item .vip-info strong { color: #fff; }
+    .vip-item .vip-info .time-left {
+      color: #f39c12; font-size: 0.75rem; font-weight: 600;
+      background: #1a1a0a; padding: 2px 10px; border-radius: 20px;
+      border: 1px solid #3a2a0a;
+    }
+    .vip-item .vip-info .time-left.forever { color: #8e44ad; border-color: #4a2a6a; background: #1a0a2a; }
+    .vip-item .vip-info .time-left.expired { color: #e74c3c; border-color: #4a2a2a; background: #1a0a0a; }
+    .vip-item .vip-info .time-left.not-started { color: #7d9cea; border-color: #2a3a5a; background: #0a1a2a; }
     .vip-item .vip-status { font-weight: 600; font-size: 0.8rem; }
     .vip-status.active { color: #27ae60; }
     .vip-status.expired { color: #e74c3c; }
-    .vip-status.forever { color: #f39c12; }
+    .vip-status.forever { color: #8e44ad; }
+    .vip-status.not-started { color: #7d9cea; }
 
     .action-buttons {
       display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 0.8rem;
@@ -740,6 +749,7 @@
     const VIP_STORAGE_KEY = 'vipAccounts';
     const VIP_HISTORY_KEY = 'vipHistory';
     const MUTED_KEY = 'mutedAccounts';
+    const VIP_ACTIVATED_KEY = 'vipActivated';
 
     function getUsers() {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -774,6 +784,13 @@
       return {};
     }
     function saveMutedAccounts(muted) { localStorage.setItem(MUTED_KEY, JSON.stringify(muted)); }
+
+    function getVipActivated() {
+      const raw = localStorage.getItem(VIP_ACTIVATED_KEY);
+      if (raw) { try { return JSON.parse(raw); } catch(e) { return {}; } }
+      return {};
+    }
+    function saveVipActivated(activated) { localStorage.setItem(VIP_ACTIVATED_KEY, JSON.stringify(activated)); }
 
     function isMuted(username) {
       const muted = getMutedAccounts();
@@ -958,9 +975,59 @@
       return map[duration] || duration;
     }
 
+    function formatTimeLeft(expiry) {
+      if (expiry === 'forever') return { text: 'Vô hạn', class: 'forever' };
+      const left = expiry - Date.now();
+      if (left <= 0) return { text: 'Hết hạn', class: 'expired' };
+      
+      const days = Math.floor(left / 86400000);
+      const hours = Math.floor((left % 86400000) / 3600000);
+      const minutes = Math.floor((left % 3600000) / 60000);
+      
+      let text = '';
+      if (days > 0) text += days + 'd ';
+      if (hours > 0) text += hours + 'h ';
+      if (minutes > 0 && days === 0) text += minutes + 'm';
+      if (text === '') text = '1m';
+      return { text: text.trim(), class: 'active' };
+    }
+
     function isVipUser(username) {
       const vipAccounts = getVipAccounts();
-      return vipAccounts.some(v => v.username === username && (v.expiry === 'forever' || v.expiry > Date.now()));
+      const activated = getVipActivated();
+      const acc = vipAccounts.find(v => v.username === username);
+      if (!acc) return false;
+      if (acc.expiry === 'forever') return true;
+      if (!activated[username]) return true;
+      return acc.expiry > Date.now();
+    }
+
+    function getVipStatus(username) {
+      const vipAccounts = getVipAccounts();
+      const activated = getVipActivated();
+      const acc = vipAccounts.find(v => v.username === username);
+      if (!acc) return null;
+      if (acc.expiry === 'forever') return { status: 'forever', label: 'Vô hạn' };
+      if (!activated[username]) return { status: 'not-started', label: 'Chưa kích hoạt' };
+      const isExpired = acc.expiry < Date.now();
+      if (isExpired) return { status: 'expired', label: 'Hết hạn' };
+      return { status: 'active', label: 'Còn hiệu lực' };
+    }
+
+    function activateVip(username) {
+      const activated = getVipActivated();
+      if (!activated[username]) {
+        const vipAccounts = getVipAccounts();
+        const acc = vipAccounts.find(v => v.username === username);
+        if (acc && acc.expiry !== 'forever') {
+          const durationRaw = acc.durationRaw || '1h';
+          acc.expiry = Date.now() + getDurationMs(durationRaw);
+          acc.durationLabel = getDurationLabel(durationRaw);
+          saveVipAccounts(vipAccounts);
+        }
+        activated[username] = true;
+        saveVipActivated(activated);
+      }
     }
 
     function extractThumbnail(videoElement) {
@@ -982,6 +1049,10 @@
           const timeLeft = getMutedTimeLeft(username);
           showError(`Tài khoản đã bị MUTE${timeLeft ? ' (còn ' + timeLeft + ')' : ''}!`);
           return false;
+        }
+        const vipAccounts = getVipAccounts();
+        if (vipAccounts.some(v => v.username === username)) {
+          activateVip(username);
         }
         setCurrentUser(username);
         hideError();
@@ -1137,7 +1208,6 @@
         grid.appendChild(card);
       }
 
-      // Pagination
       paginationEl.innerHTML = '';
       if (totalPages > 1) {
         const prevBtn = document.createElement('button');
@@ -1183,20 +1253,17 @@
       const wrapper = document.createElement('div');
       wrapper.className = 'video-wrapper';
 
-      // Thumbnail
       const thumbImg = document.createElement('img');
       thumbImg.className = 'thumbnail';
       thumbImg.src = video.thumbnail || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="320" height="180"%3E%3Crect width="320" height="180" fill="%231a1a2e"/%3E%3Ctext x="160" y="90" font-family="Arial" font-size="20" fill="%23333" text-anchor="middle"%3E🎬%3C/text%3E%3C/svg%3E';
       thumbImg.alt = video.name;
       wrapper.appendChild(thumbImg);
 
-      // Play icon
       const playIcon = document.createElement('div');
       playIcon.className = 'play-icon';
       playIcon.innerHTML = '<i class="fas fa-play"></i>';
       wrapper.appendChild(playIcon);
 
-      // Video element
       const videoEl = document.createElement('video');
       videoEl.src = video.dataURL;
       videoEl.preload = 'metadata';
@@ -1204,13 +1271,11 @@
       videoEl.style.display = 'none';
       wrapper.appendChild(videoEl);
 
-      // View count overlay
       const viewOverlay = document.createElement('div');
       viewOverlay.className = 'view-count-overlay';
       viewOverlay.innerHTML = `<i class="fas fa-eye"></i> ${formatViews(video.views || 0)}`;
       wrapper.appendChild(viewOverlay);
 
-      // Click to play - Check mute status
       wrapper.addEventListener('click', function() {
         const user = getCurrentUser();
         if (user && isMuted(user)) {
@@ -1279,7 +1344,6 @@
       const actions = document.createElement('div');
       actions.className = 'card-actions';
 
-      // Watch button
       const watchBtn = document.createElement('button');
       watchBtn.className = 'btn btn-watch';
       watchBtn.innerHTML = '<i class="fas fa-play"></i> Xem';
@@ -1306,7 +1370,6 @@
       };
       actions.appendChild(downloadBtn);
 
-      // Admin delete button
       const user = getCurrentUser();
       if (user === 'Nduc') {
         const deleteBtn = document.createElement('button');
@@ -1386,10 +1449,10 @@
           
           if (isVip) {
             if (!window._vipVideoLibrary) window._vipVideoLibrary = [];
-            window._vipVideoLibrary.unshift(entry); // Thêm vào đầu
+            window._vipVideoLibrary.unshift(entry);
           } else {
             if (!window._videoLibrary) window._videoLibrary = [];
-            window._videoLibrary.unshift(entry); // Thêm vào đầu
+            window._videoLibrary.unshift(entry);
           }
           
           const user = getCurrentUser();
@@ -1413,22 +1476,48 @@
     // ========== VIP MANAGEMENT ==========
     function renderVipAccounts() {
       const accounts = getVipAccounts();
+      const activated = getVipActivated();
+      
       if (accounts.length === 0) {
         vipAccountsContainer.innerHTML = '<p style="color:#4a4a6a; font-style:italic;">Chưa có tài khoản VIP nào.</p>';
         return;
       }
+      
       let html = '';
       for (const acc of accounts) {
-        const isExpired = acc.expiry !== 'forever' && acc.expiry < Date.now();
-        const statusText = isExpired ? 'Hết hạn' : (acc.expiry === 'forever' ? 'Vô hạn' : 'Còn hiệu lực');
-        const statusClass = isExpired ? 'expired' : (acc.expiry === 'forever' ? 'forever' : 'active');
+        const isActivated = activated[acc.username];
+        let timeLeftHtml = '';
+        let statusClass = '';
+        let statusText = '';
+        
+        if (acc.expiry === 'forever') {
+          timeLeftHtml = '<span class="time-left forever">♾️ Vô hạn</span>';
+          statusClass = 'forever';
+          statusText = 'Vô hạn';
+        } else if (!isActivated) {
+          timeLeftHtml = '<span class="time-left not-started">⏳ Chưa kích hoạt</span>';
+          statusClass = 'not-started';
+          statusText = 'Chưa kích hoạt';
+        } else if (acc.expiry < Date.now()) {
+          timeLeftHtml = '<span class="time-left expired">⏰ Hết hạn</span>';
+          statusClass = 'expired';
+          statusText = 'Hết hạn';
+        } else {
+          const timeLeft = formatTimeLeft(acc.expiry);
+          timeLeftHtml = `<span class="time-left ${timeLeft.class}">⏱️ ${timeLeft.text}</span>`;
+          statusClass = 'active';
+          statusText = 'Còn hiệu lực';
+        }
+        
         const isMutedAcc = isMuted(acc.username);
+        
         html += `
           <div class="vip-item">
             <div class="vip-info">
               <strong>${acc.username}</strong>
+              ${timeLeftHtml}
               <span style="color:#4a4a6a;">pass: ${acc.password}</span>
-              <span style="color:#4a4a6a; font-size:0.8rem;">${acc.durationLabel}</span>
+              <span style="color:#4a4a6a; font-size:0.8rem;">${acc.durationLabel || '1 giờ'}</span>
               ${isMutedAcc ? '<span style="color:#e67e22;font-size:0.7rem;">(MUTED)</span>' : ''}
             </div>
             <span class="vip-status ${statusClass}">${statusText}</span>
@@ -1442,7 +1531,7 @@
       const count = parseInt(vipCount.value) || 1;
       const duration = vipDuration.value;
       const durationLabel = vipDuration.options[vipDuration.selectedIndex].text;
-      const expiry = duration === 'forever' ? 'forever' : Date.now() + getDurationMs(duration);
+      const durationRaw = duration;
 
       const accounts = getVipAccounts();
       const newAccounts = [];
@@ -1452,8 +1541,9 @@
         const acc = {
           username: cred.username,
           password: cred.password,
-          expiry: expiry,
+          expiry: duration === 'forever' ? 'forever' : Date.now() + getDurationMs(duration),
           durationLabel: durationLabel,
+          durationRaw: durationRaw,
           createdAt: Date.now()
         };
         accounts.push(acc);
@@ -1503,7 +1593,7 @@
       if (!confirm('Xoá lịch sử tạo tài khoản VIP? (Chỉ xoá lịch sử, không xoá tài khoản)')) return;
       saveVipHistory([]);
       renderVipAccounts();
-      alert('Đã xoá lịch sử tạo VIP!');
+      alert('Đã xoá lịch sử tạo VIP thành công!');
     }
 
     // ========== MISC FUNCTIONS ==========
@@ -1547,7 +1637,7 @@
       
       const users = getUsers();
       const muted = getMutedAccounts();
-      const duration = '7d'; // Mặc định 7 ngày
+      const duration = '7d';
       const expiry = Date.now() + getDurationMs(duration);
       
       let count = 0;
@@ -1742,7 +1832,6 @@
     muteUsername.addEventListener('keyup', function(e) { if (e.key === 'Enter') muteBtn.click(); });
     extendUsername.addEventListener('keyup', function(e) { if (e.key === 'Enter') extendBtn.click(); });
 
-    // Mute modal close
     closeMuteModal.addEventListener('click', function() {
       muteModal.classList.remove('active');
     });
