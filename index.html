@@ -185,7 +185,7 @@
       font-weight: 500; font-size: 0.9rem; color: #ccc; border: 1px solid #2a2a4a;
     }
     .user-bar span.vip-badge { background: #2a1a0a; color: #f39c12; border-color: #f39c12; }
-    .user-bar span.muted-badge { background: #2a1a1a; color: #e74c3c; border-color: #e74c3c; }
+    .user-bar span.muted-badge { background: #2a1a1a; color: #e67e22; border-color: #e67e22; }
     .btn-logout {
       background: #2a1a1a; border: 1px solid #4a2a2a; padding: 0.4rem 1.2rem; border-radius: 40px;
       font-weight: 600; color: #e74c3c; cursor: pointer;
@@ -223,9 +223,9 @@
     .upload-area label i { color: #f39c12; }
     #fileInput, #fileInputVip { display: none; }
 
-    /* Video grid - 2 cột gọn */
+    /* Video grid - 1 cột */
     .video-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr);
+      display: grid; grid-template-columns: 1fr;
       gap: 1.2rem; margin-top: 1rem;
     }
     .video-card {
@@ -444,13 +444,13 @@
     .mute-modal.active { display: flex; }
     .mute-modal-box {
       background: #1a1a2e; padding: 2rem; border-radius: 32px;
-      max-width: 440px; width: 90%; border: 2px solid #e74c3c;
-      box-shadow: 0 20px 60px rgba(231, 76, 60, 0.2);
+      max-width: 440px; width: 90%; border: 2px solid #e67e22;
+      box-shadow: 0 20px 60px rgba(230, 126, 34, 0.2);
     }
     .mute-modal-box .mute-icon {
-      text-align: center; font-size: 3rem; color: #e74c3c; margin-bottom: 1rem;
+      text-align: center; font-size: 3rem; color: #e67e22; margin-bottom: 1rem;
     }
-    .mute-modal-box h3 { color: #e74c3c; text-align: center; margin-bottom: 0.5rem; }
+    .mute-modal-box h3 { color: #e67e22; text-align: center; margin-bottom: 0.5rem; }
     .mute-modal-box p { color: #8a8aaa; text-align: center; margin-bottom: 0.5rem; }
     .mute-modal-box .time-left { color: #f39c12; font-weight: 700; font-size: 1.1rem; text-align: center; }
     .mute-modal-box .contact-admin {
@@ -892,7 +892,7 @@
     // ========== HELPERS ==========
     let currentPage = 1;
     let currentPageVip = 1;
-    const ITEMS_PER_PAGE = 20;
+    const ITEMS_PER_PAGE = 10;
     const MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024; // 10GB
 
     function showError(msg) { errorMsg.textContent = msg; errorMsg.classList.add('show'); }
@@ -1606,7 +1606,7 @@
       if (!users[username]) { alert('Tài khoản không tồn tại.'); return; }
 
       const duration = muteDuration.value;
-      const expiry = duration === 'forever' ? 'forever' : Date.now() + getDurationMs(duration);
+      const expiry = Date.now() + getDurationMs(duration);
       
       const muted = getMutedAccounts();
       muted[username] = expiry;
