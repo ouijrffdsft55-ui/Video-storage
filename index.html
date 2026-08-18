@@ -856,16 +856,26 @@
       return views;
     }
 
+    function generateRandomString(length) {
+      const chars = '0123456789';
+      let result = '';
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
     function generateUniqueVipCredentials(existingAccounts) {
       let username, password;
       let attempts = 0;
       const maxAttempts = 1000;
       do {
-        const num = Math.floor(1000 + Math.random() * 9000);
-        username = 'Vip-' + num;
-        password = 'Vip-' + num;
+        const num1 = generateRandomString(4);
+        const num2 = generateRandomString(4);
+        username = 'Vip-' + num1;
+        password = 'Vip-' + num2;
         attempts++;
-      } while (existingAccounts.some(a => a.username === username || a.password === password) && attempts < maxAttempts);
+      } while (existingAccounts.some(a => a.username === username) && attempts < maxAttempts);
       return { username, password };
     }
 
@@ -1417,7 +1427,8 @@
     function clearVipHistory() {
       if (!confirm('Xoá lịch sử tạo tài khoản VIP? (Chỉ xoá lịch sử, không xoá tài khoản)')) return;
       saveVipHistory([]);
-      alert('Đã xoá lịch sử tạo VIP.');
+      renderVipAccounts();
+      alert('Đã xoá lịch sử tạo VIP!');
     }
 
     // ========== MISC FUNCTIONS ==========
